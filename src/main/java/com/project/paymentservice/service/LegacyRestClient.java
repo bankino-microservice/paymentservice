@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface LegacyRestClient {
 
     // --- Virement Operations ---
-    @PostMapping("/api/virement/execute")
+    @PostMapping("/api/virements/execute")
     ExecuteVirementResponseDTO executeVirement(@RequestBody ExecuteVirementRequestDTO request);
 
-    @GetMapping("/api/virement/{id}")
+    @GetMapping("/api/virements/{id}")
     VirementSoapInfoDTO getVirementById(@PathVariable("id") Long id);
 
     // --- Savings Operations ---

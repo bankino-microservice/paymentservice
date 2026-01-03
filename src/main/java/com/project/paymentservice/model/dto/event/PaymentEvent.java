@@ -15,15 +15,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PaymentEvent  {
 
-    private Long paymentId;
+
     private String clientEmail;
     private String clientName;
     private BigDecimal amount;
-    private String currency;
-    private String paymentMethod;
-    private String status;
 
-    private String transactionId;
+
+    private String clientPhoneNumber;
+
     private String description;
 
 }

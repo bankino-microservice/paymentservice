@@ -1,27 +1,37 @@
 package com.project.paymentservice.controller;
 
 import com.project.paymentservice.model.dto.*;
-import com.project.paymentservice.model.dto.event.PaymentEventMock;
+import com.project.paymentservice.model.dto.event.PaymentEvent;
+//
 import com.project.paymentservice.model.dto.inputs.*;
 import com.project.paymentservice.model.mapper.PaymentMapper;
+import com.project.paymentservice.service.Compteclient;
 import com.project.paymentservice.service.LegacyRestClient;
 import com.project.paymentservice.service.Paymentservice;
+import com.project.paymentservice.service.Userclient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentRestController {
-
+    private final Compteclient compteclient;
     private final LegacyRestClient legacyClient;
     private final PaymentMapper paymentMapper;
     private final Paymentservice paymentservice;
+    private final Userclient userclient;
 
     public PaymentRestController(LegacyRestClient legacyClient,
-                                 PaymentMapper paymentMapper, Paymentservice paymentservice) {
+                                 PaymentMapper paymentMapper, Paymentservice paymentservice
+            ,Compteclient compteclient, Userclient userclient) {
         this.legacyClient = legacyClient;
         this.paymentMapper = paymentMapper;
         this.paymentservice = paymentservice;
+        this.compteclient = compteclient;
+        this.userclient=userclient;
     }
 
     // ---------------- QUERIES ----------------
@@ -39,32 +49,104 @@ public class PaymentRestController {
     public ResponseEntity<ExecuteVirementResponseDTO> executeVirement(
             @RequestBody ExecuteVirementInput input
     ) {
-        ExecuteVirementRequestDTO request =
-                paymentMapper.toVirementRequest(input);
+        // 1. Map the input
+        ExecuteVirementRequestDTO request = paymentMapper.toVirementRequest(input);
+        ExecuteVirementResponseDTO responseBody = legacyClient.executeVirement(request);
 
-        return ResponseEntity.ok(
-                legacyClient.executeVirement(request)
-        );
+        // 3. Validate the response from the legacy system
+        if (responseBody != null) {
+            PaymentEvent paymentEvent=new PaymentEvent();
+            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getRibRecepteur());
+            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
+            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
+            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
+            paymentEvent.setClientName(registerClientResDTO.getFirstName());
+            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
+            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
+            paymentEvent.setDescription("Virement");
+
+
+            System.out.println("rib"+responseDTO.getClientId());
+
+            paymentservice.sendPaymentEvent(paymentEvent);
+
+            // 5. Return success (200 OK or 201 CREATED based on your requirement)
+            return ResponseEntity
+                    .status(HttpStatus.CREATED) // Explicitly setting CREATED if that is the requirement
+                    .body(responseBody);
+        } else {
+            // 6. Handle failure gracefully
+            throw new RuntimeException("Legacy system returned null response");
+        }
     }
-
     // ---------------- MUTATIONS : SAVINGS ----------------
 
     @PostMapping("/savings/deposit")
     public ResponseEntity<CEpargneResponseDTO> depositSavings(
             @RequestBody SavingsInput input
     ) {
-        return ResponseEntity.ok(
-                legacyClient.deposit(paymentMapper.toSavingsRequest(input))
-        );
+        // 1. Map the input
+        var request = paymentMapper.toSavingsRequest(input);
+
+        // 2. Call the legacy client
+        CEpargneResponseDTO responseBody = legacyClient.deposit(request);
+
+        // 3. Validate the response
+        if (responseBody != null) {
+            PaymentEvent paymentEvent=new PaymentEvent();
+            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getCourantrib());
+            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
+            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
+            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
+            paymentEvent.setClientName(registerClientResDTO.getFirstName());
+            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
+            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
+            paymentEvent.setDescription("Depot");
+
+
+            System.out.println("rib"+responseDTO.getClientId());
+
+            paymentservice.sendPaymentEvent(paymentEvent);
+            // 5. Return success
+            return ResponseEntity.ok(responseBody);
+        } else {
+            // 6. Handle failure gracefully
+            throw new RuntimeException("Legacy system returned null response for Savings Deposit");
+        }
     }
 
     @PostMapping("/savings/withdraw")
     public ResponseEntity<CEpargneResponseDTO> withdrawSavings(
             @RequestBody SavingsInput input
     ) {
-        return ResponseEntity.ok(
-                legacyClient.withdraw(paymentMapper.toSavingsRequest(input))
-        );
+        // 1. Map the input
+        var request = paymentMapper.toSavingsRequest(input);
+
+        // 2. Call the legacy client
+        CEpargneResponseDTO responseBody = legacyClient.withdraw(request);
+
+        // 3. Validate the response
+        if (responseBody != null) {
+            PaymentEvent paymentEvent=new PaymentEvent();
+            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getCourantrib());
+            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
+            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
+            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
+            paymentEvent.setClientName(registerClientResDTO.getFirstName());
+            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
+            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
+            paymentEvent.setDescription("Retrait");
+
+
+            System.out.println("rib"+responseDTO.getClientId());
+
+            paymentservice.sendPaymentEvent(paymentEvent);
+            // 5. Return success
+            return ResponseEntity.ok(responseBody);
+        } else {
+            // 6. Handle failure gracefully
+            throw new RuntimeException("Legacy system returned null response for Savings Withdrawal");
+        }
     }
 
     // ---------------- MUTATIONS : CLOSING ----------------
@@ -93,9 +175,9 @@ public class PaymentRestController {
     @PostMapping("/static")
     public ResponseEntity<String> sendStaticPayment() {
 
-        paymentservice.sendPaymentEvent(
-                PaymentEventMock.STATIC_PAYMENT_EVENT
-        );
+//        paymentservice.sendPaymentEvent(
+//                PaymentEventMock.STATIC_PAYMENT_EVENT
+//        );
 
         return ResponseEntity.ok(
                 "Static payment event sent to NotificationService"

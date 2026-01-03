@@ -14,7 +14,7 @@ public class Paymentservice {
     private static final String TOPIC = "payment-events";
 
     public void sendPaymentEvent(PaymentEvent event) {
-        kafkaTemplate.send(TOPIC, event.getTransactionId(), event);
+        kafkaTemplate.send(TOPIC, event);
         System.out.println("PaymentEvent sent: " + event);
     }
 }

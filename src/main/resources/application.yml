@@ -21,3 +21,7 @@ legacy:
 kafka:
   topic:
     payment-events: payment-events
+account:
+  service: http://localhost:8081
+user:
+  service: http://localhost:8083
