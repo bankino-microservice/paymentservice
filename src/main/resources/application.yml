@@ -4,6 +4,7 @@ server:
 spring:
   application:
     name: payment-service
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -13,10 +14,23 @@ spring:
       spring.json.add.type.headers: true
 
   security:
+    # ===== Resource Server (validate incoming JWTs) =====
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8080/realms/bankino
+
+      # ===== OAuth2 Client (to call other services) =====
+      client:
+        registration:
+          keycloak:
+            client-id: ${keycloak.client-id}
+            client-secret: ${keycloak.client-secret}
+            authorization-grant-type: client_credentials
+            scope: openid
+        provider:
+          keycloak:
+            token-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
 
 legacy:
   service:
@@ -31,3 +45,10 @@ account:
 
 user:
   service: http://localhost:8083
+
+# ===== Keycloak environment variables =====
+keycloak:
+  client-id: payment-service
+  client-secret: tbHITJJmxe9GzHy8SmgwWV3GThSqoX0O
+  auth-server-url: http://localhost:8080
+  realm: bankino
