@@ -1,5 +1,6 @@
 package com.project.paymentservice.service;
 
+import com.project.paymentservice.configuration.FeignOAuth2Config;
 import com.project.paymentservice.model.dto.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Service;
@@ -8,7 +9,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "legacy-adapter-service", url = "${legacy.service.url}")
+@FeignClient(name = "legacy-adapter-service",
+        url = "${legacy.service.url}",
+        configuration = FeignOAuth2Config.class
+)
 public interface LegacyRestClient {
 
     // --- Virement Operations ---

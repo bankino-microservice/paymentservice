@@ -1,4 +1,4 @@
-package com.project.paymentservice.conf;
+package com.project.paymentservice.configuration;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;

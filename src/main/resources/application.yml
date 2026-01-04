@@ -1,6 +1,6 @@
-
 server:
-  port: 8089 # Run Payment Service on 8082 to avoid conflict with Legacy (8081)
+  port: 8089 # Run Payment Service on 8089 to avoid conflict with Legacy (8081)
+
 spring:
   application:
     name: payment-service
@@ -9,19 +9,25 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
     properties:
       spring.json.add.type.headers: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/bankino
 
 legacy:
   service:
     url: http://localhost:8085 # The URL where your LegacyAdapterService is running
 
-
 kafka:
   topic:
     payment-events: payment-events
+
 account:
-  service: http://localhost:8081
+  service: http://localhost:8084
+
 user:
   service: http://localhost:8083

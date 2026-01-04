@@ -1,4 +1,4 @@
-package com.project.paymentservice.conf;
+package com.project.paymentservice.configuration;
 
 import com.project.paymentservice.model.dto.event.PaymentEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;

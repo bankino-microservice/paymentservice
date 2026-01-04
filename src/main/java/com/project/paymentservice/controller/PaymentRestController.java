@@ -11,6 +11,7 @@ import com.project.paymentservice.service.Paymentservice;
 import com.project.paymentservice.service.Userclient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -36,6 +37,8 @@ public class PaymentRestController {
 
     // ---------------- QUERIES ----------------
 
+
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
     @GetMapping("/virements/{id}")
     public ResponseEntity<VirementSoapInfoDTO> getVirementById(@PathVariable Long id) {
         return ResponseEntity.ok(
@@ -45,6 +48,7 @@ public class PaymentRestController {
 
     // ---------------- MUTATIONS : VIREMENT ----------------
 
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
     @PostMapping("/virements/execute")
     public ResponseEntity<ExecuteVirementResponseDTO> executeVirement(
             @RequestBody ExecuteVirementInput input
@@ -81,6 +85,7 @@ public class PaymentRestController {
     }
     // ---------------- MUTATIONS : SAVINGS ----------------
 
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
     @PostMapping("/savings/deposit")
     public ResponseEntity<CEpargneResponseDTO> depositSavings(
             @RequestBody DepotRetraitCEpargneRequestDTO input
@@ -116,6 +121,7 @@ public class PaymentRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
     @PostMapping("/savings/withdraw")
     public ResponseEntity<CEpargneResponseDTO> withdrawSavings(
             @RequestBody DepotRetraitCEpargneRequestDTO input
@@ -152,6 +158,7 @@ public class PaymentRestController {
 
     // ---------------- MUTATIONS : CLOSING ----------------
 
+
     @PostMapping("/closing/quinzaine")
     public ResponseEntity<ClotureAnnuelleResponseDTO> closeQuinzaine(
             @RequestBody QuinzaineInput input
@@ -163,6 +170,7 @@ public class PaymentRestController {
         );
     }
 
+
     @PostMapping("/closing/annual")
     public ResponseEntity<ClotureAnnuelleResponseDTO> closeAnnual(
             @RequestBody AnnualInput input
@@ -173,6 +181,8 @@ public class PaymentRestController {
                 )
         );
     }
+
+
     @PostMapping("/static")
     public ResponseEntity<String> sendStaticPayment() {
 
