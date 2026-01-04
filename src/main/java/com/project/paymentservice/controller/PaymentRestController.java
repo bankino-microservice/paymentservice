@@ -55,20 +55,20 @@ public class PaymentRestController {
 
         // 3. Validate the response from the legacy system
         if (responseBody != null) {
-            PaymentEvent paymentEvent=new PaymentEvent();
-            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getRibRecepteur());
-            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
-            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
-            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
-            paymentEvent.setClientName(registerClientResDTO.getFirstName());
-            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
-            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
-            paymentEvent.setDescription("Virement");
+//            PaymentEvent paymentEvent=new PaymentEvent();
+//            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getRibRecepteur());
+//            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
+//            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
+//            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
+//            paymentEvent.setClientName(registerClientResDTO.getFirstName());
+//            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
+//            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
+//            paymentEvent.setDescription("Virement");
+//
+//
+//            System.out.println("rib"+responseDTO.getClientId());
 
-
-            System.out.println("rib"+responseDTO.getClientId());
-
-            paymentservice.sendPaymentEvent(paymentEvent);
+//            paymentservice.sendPaymentEvent(paymentEvent);
 
             // 5. Return success (200 OK or 201 CREATED based on your requirement)
             return ResponseEntity
@@ -83,31 +83,32 @@ public class PaymentRestController {
 
     @PostMapping("/savings/deposit")
     public ResponseEntity<CEpargneResponseDTO> depositSavings(
-            @RequestBody SavingsInput input
+            @RequestBody DepotRetraitCEpargneRequestDTO input
     ) {
+        System.out.println(input.getCourantrib());
         // 1. Map the input
-        var request = paymentMapper.toSavingsRequest(input);
+
 
         // 2. Call the legacy client
-        CEpargneResponseDTO responseBody = legacyClient.deposit(request);
+        CEpargneResponseDTO responseBody = legacyClient.deposit(input);
 
         // 3. Validate the response
         if (responseBody != null) {
-            PaymentEvent paymentEvent=new PaymentEvent();
-            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getCourantrib());
-            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
-            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
-            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
-            paymentEvent.setClientName(registerClientResDTO.getFirstName());
-            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
-            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
-            paymentEvent.setDescription("Depot");
-
-
-            System.out.println("rib"+responseDTO.getClientId());
-
-            paymentservice.sendPaymentEvent(paymentEvent);
-            // 5. Return success
+//            PaymentEvent paymentEvent=new PaymentEvent();
+//            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getCourantrib());
+//            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
+//            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
+//            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
+//            paymentEvent.setClientName(registerClientResDTO.getFirstName());
+//            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
+//            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
+//            paymentEvent.setDescription("Depot");
+//
+//
+//            System.out.println("rib"+responseDTO.getClientId());
+//
+//            paymentservice.sendPaymentEvent(paymentEvent);
+//            // 5. Return success
             return ResponseEntity.ok(responseBody);
         } else {
             // 6. Handle failure gracefully
@@ -117,30 +118,30 @@ public class PaymentRestController {
 
     @PostMapping("/savings/withdraw")
     public ResponseEntity<CEpargneResponseDTO> withdrawSavings(
-            @RequestBody SavingsInput input
+            @RequestBody DepotRetraitCEpargneRequestDTO input
     ) {
         // 1. Map the input
-        var request = paymentMapper.toSavingsRequest(input);
+
 
         // 2. Call the legacy client
-        CEpargneResponseDTO responseBody = legacyClient.withdraw(request);
+        CEpargneResponseDTO responseBody = legacyClient.withdraw(input);
 
         // 3. Validate the response
         if (responseBody != null) {
-            PaymentEvent paymentEvent=new PaymentEvent();
-            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getCourantrib());
-            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
-            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
-            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
-            paymentEvent.setClientName(registerClientResDTO.getFirstName());
-            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
-            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
-            paymentEvent.setDescription("Retrait");
-
-
-            System.out.println("rib"+responseDTO.getClientId());
-
-            paymentservice.sendPaymentEvent(paymentEvent);
+//            PaymentEvent paymentEvent=new PaymentEvent();
+//            GetClientIdByRibRequestDTO requestDTO = new GetClientIdByRibRequestDTO(input.getCourantrib());
+//            GetClientIdByRibResponseDTO responseDTO = compteclient.getClientIdByRib(requestDTO).getBody();
+//            RegisterClientResDTO registerClientResDTO=userclient.get(responseDTO.getClientId()).getBody();
+//            paymentEvent.setAmount(BigDecimal.valueOf(input.getMontant()));
+//            paymentEvent.setClientName(registerClientResDTO.getFirstName());
+//            paymentEvent.setClientEmail(registerClientResDTO.getEmail());
+//            paymentEvent.setClientPhoneNumber(registerClientResDTO.getPhone());
+//            paymentEvent.setDescription("Retrait");
+//
+//
+//            System.out.println("rib"+responseDTO.getClientId());
+//
+//            paymentservice.sendPaymentEvent(paymentEvent);
             // 5. Return success
             return ResponseEntity.ok(responseBody);
         } else {
