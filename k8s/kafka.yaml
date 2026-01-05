@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: banking-ns
+spec:
+  ports:
+    - port: 9092
+      targetPort: 9092
+      name: plaintext
+  clusterIP: None # Headless Service (Critical for StatefulSets)
+  selector:
+    app: kafka-broker
+
+---
+apiVersion: apps/v1
+kind: StatefulSet # <--- CHANGED from Deployment
+metadata:
+  name: kafka-broker
+  namespace: banking-ns
+spec:
+  serviceName: "kafka-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-broker
+  template:
+    metadata:
+      labels:
+        app: kafka-broker
+    spec:
+      containers:
+        - name: kafka
+          image: confluentinc/cp-kafka:8.1.0
+          ports:
+            - containerPort: 9092
+            - containerPort: 9093
+          env:
+            - name: KAFKA_NODE_ID
+              value: "1"
+            - name: KAFKA_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: "1@localhost:9093"
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_LISTENERS
+              value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+
+            # FIX: Use the specific Pod DNS name provided by StatefulSet
+            # Format: pod-name.service-name.namespace.svc.cluster.local
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka-broker-0.kafka-service.banking-ns.svc.cluster.local:9092"
+
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
+              value: "0"
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+            - name: CLUSTER_ID
+              value: "MkU3OEVBNTcwNTJENDM2Qk"
+
+          # MOUNT THE VOLUME
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
+
+  # REQUEST STORAGE FROM AWS (EBS)
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
