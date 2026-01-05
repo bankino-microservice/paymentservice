@@ -30,7 +30,7 @@ spec:
         app: kafka-broker
     spec:
       # =========================================================
-      # ⬇️ ADDED: InitContainer to fix Volume Permissions ⬇️
+      # InitContainer: Fixes volume permission errors (CrashLoopBackOff)
       # =========================================================
       initContainers:
         - name: volume-permissions
@@ -39,7 +39,6 @@ spec:
           volumeMounts:
             - name: kafka-data
               mountPath: /var/lib/kafka/data
-      # =========================================================
 
       containers:
         - name: kafka
@@ -59,7 +58,7 @@ spec:
             - name: KAFKA_LISTENERS
               value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
 
-            # FIX: Use the specific Pod DNS name provided by StatefulSet
+            # DNS config for internal cluster communication
             - name: KAFKA_ADVERTISED_LISTENERS
               value: "PLAINTEXT://kafka-broker-0.kafka-service.banking-ns.svc.cluster.local:9092"
 
@@ -78,18 +77,20 @@ spec:
             - name: CLUSTER_ID
               value: "MkU3OEVBNTcwNTJENDM2Qk"
 
-          # MOUNT THE VOLUME
+          # Mount the volume to the container
           volumeMounts:
             - name: kafka-data
               mountPath: /var/lib/kafka/data
 
+  # =========================================================
+  # PVC Template: This requests the persistent storage
+  # =========================================================
   volumeClaimTemplates:
     - metadata:
         name: kafka-data
       spec:
-        storageClassName: gp2
-        accessModes:
-          - ReadWriteOnce
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "gp2"
         resources:
           requests:
             storage: 10Gi
