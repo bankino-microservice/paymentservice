@@ -8,7 +8,7 @@ spec:
     - port: 9092
       targetPort: 9092
       name: plaintext
-  clusterIP: None # Headless Service (Critical for StatefulSets)
+  clusterIP: None # Headless Service (Critical for StatefulSet stability)
   selector:
     app: kafka-broker
 
@@ -30,12 +30,16 @@ spec:
         app: kafka-broker
     spec:
       # =========================================================
-      # InitContainer: Fixes volume permission errors (CrashLoopBackOff)
+      # InitContainer: FIXES 'lost+found' CRASH & PERMISSIONS
       # =========================================================
       initContainers:
         - name: volume-permissions
           image: busybox
-          command: ['sh', '-c', 'chown -R 1000:1000 /var/lib/kafka/data']
+          # The 'rm -rf' command below removes the system directory that causes Kafka to crash
+          command:
+            - 'sh'
+            - '-c'
+            - 'rm -rf /var/lib/kafka/data/lost+found && chown -R 1000:1000 /var/lib/kafka/data'
           volumeMounts:
             - name: kafka-data
               mountPath: /var/lib/kafka/data
@@ -47,23 +51,27 @@ spec:
             - containerPort: 9092
             - containerPort: 9093
           env:
+            # Identity and Role
             - name: KAFKA_NODE_ID
               value: "1"
             - name: KAFKA_PROCESS_ROLES
               value: "broker,controller"
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
               value: "1@localhost:9093"
-            - name: KAFKA_CONTROLLER_LISTENER_NAMES
-              value: "CONTROLLER"
+
+            # Listeners
             - name: KAFKA_LISTENERS
               value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
-
-            # DNS config for internal cluster communication
             - name: KAFKA_ADVERTISED_LISTENERS
               value: "PLAINTEXT://kafka-broker-0.kafka-service.banking-ns.svc.cluster.local:9092"
-
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
               value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+
+            # KRaft & Storage Config
+            - name: CLUSTER_ID
+              value: "MkU3OEVBNTcwNTJENDM2Qk"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
             - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
@@ -74,16 +82,13 @@ spec:
               value: "0"
             - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
               value: "true"
-            - name: CLUSTER_ID
-              value: "MkU3OEVBNTcwNTJENDM2Qk"
 
-          # Mount the volume to the container
           volumeMounts:
             - name: kafka-data
               mountPath: /var/lib/kafka/data
 
   # =========================================================
-  # PVC Template: This requests the persistent storage
+  # PVC Template
   # =========================================================
   volumeClaimTemplates:
     - metadata:
