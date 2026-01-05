@@ -72,13 +72,15 @@ spec:
             - name: kafka-data
               mountPath: /var/lib/kafka/data
 
-  # REQUEST STORAGE FROM AWS (EBS)
   volumeClaimTemplates:
     - metadata:
         name: kafka-data
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: gp2
+        accessModes:
+          - ReadWriteOnce
         resources:
           requests:
             storage: 10Gi
+
 
