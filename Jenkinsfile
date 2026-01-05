@@ -119,7 +119,6 @@ pipeline{
                           kubectl apply -f k8s/kafkadb.yaml
                           kubectl apply -f k8s/kafka.yaml
 
-
                           """
                       }
                   }
