@@ -102,31 +102,7 @@ pipeline{
     }
 
 
-   stage("Trigger remote Trivy scan") {
-    steps {
-        script {
-            def remoteUser = "ubuntu"
-            def remoteHost = "170.20.1.57"
-            def imageTag = "${IMAGE_NAME}:payment${BUILD_NUMBER}"
 
-            withCredentials([aws(credentialsId: "${CREDENTIAL_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                sshagent(['ec2-ssh-key']) {
-                    sh """
-ssh -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost} '
-  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} &&
-  export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} &&
-  export AWS_DEFAULT_REGION=${AWS_REGION} &&
-  aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${REGISTRY_URL} &&
-  docker pull ${imageTag} &&
-  trivy image --exit-code 1 --severity HIGH,CRITICAL ${imageTag} > ~/trivy-remote-result.txt
-'
-scp -o StrictHostKeyChecking=no ${remoteUser}@${remoteHost}:~/trivy-remote-result.txt ./trivy-remote-result.txt
-"""
-                }
-            }
-        }
-    }
-}
 
   stage("Deploy to EKS") {
               steps {
