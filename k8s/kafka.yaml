@@ -8,7 +8,7 @@ spec:
     - port: 9092
       targetPort: 9092
       name: plaintext
-  clusterIP: None # Headless Service (Critical for StatefulSet stability)
+  clusterIP: None
   selector:
     app: kafka-broker
 
@@ -30,16 +30,17 @@ spec:
         app: kafka-broker
     spec:
       # =========================================================
-      # InitContainer: FIXES 'lost+found' CRASH & PERMISSIONS
+      # InitContainer: CREATES SUBDIR & FIXES PERMISSIONS
       # =========================================================
       initContainers:
         - name: volume-permissions
           image: busybox
-          # The 'rm -rf' command below removes the system directory that causes Kafka to crash
+          # FIX: Instead of deleting lost+found, we create a 'logs' subdir
+          # and ensure the kafka user (1000) owns it.
           command:
             - 'sh'
             - '-c'
-            - 'rm -rf /var/lib/kafka/data/lost+found && chown -R 1000:1000 /var/lib/kafka/data'
+            - 'mkdir -p /var/lib/kafka/data/logs && chown -R 1000:1000 /var/lib/kafka/data'
           volumeMounts:
             - name: kafka-data
               mountPath: /var/lib/kafka/data
@@ -58,6 +59,12 @@ spec:
               value: "broker,controller"
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
               value: "1@localhost:9093"
+
+            # =========================================================
+            # THE FIX: Point Kafka to the subdirectory
+            # =========================================================
+            - name: KAFKA_LOG_DIRS
+              value: "/var/lib/kafka/data/logs"
 
             # Listeners
             - name: KAFKA_LISTENERS
@@ -87,9 +94,6 @@ spec:
             - name: kafka-data
               mountPath: /var/lib/kafka/data
 
-  # =========================================================
-  # PVC Template
-  # =========================================================
   volumeClaimTemplates:
     - metadata:
         name: kafka-data
