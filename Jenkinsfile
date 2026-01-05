@@ -116,6 +116,7 @@ pipeline{
 
                           # 3. Apply the updated file
                           kubectl apply -f k8s/payment.yaml
+                          kubectl apply -f k8s/kafkadb.yaml
                           kubectl apply -f k8s/kafka.yaml
 
 
