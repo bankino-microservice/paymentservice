@@ -1,3 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: banking-ns
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,31 +20,20 @@ spec:
     spec:
       containers:
         - name: payment-service
-          # Replace with your actual ECR URI
           image: 342547628532.dkr.ecr.us-west-2.amazonaws.com/ebanking:payment-latest
           ports:
-            - containerPort: 8089 # Matches your server.port
+            - containerPort: 8089
           env:
-            # 1. KAFKA CONNECTION (Overrides localhost:9092)
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
-
-            # 2. LEGACY CONNECTION (Overrides localhost:8085)
-            # We point to the Service Name we created earlier
             - name: LEGACY_SERVICE_URL
               value: "http://legacy-adapter-public:80"
-
-            # 3. OTHER SERVICES (Overrides localhost:8081/8083)
-            # You must deploy these services for these URLs to work!
             - name: ACCOUNT_SERVICE
               value: "http://account-service:80"
             - name: USER_SERVICE
               value: "http://user-service:80"
-
-            # 4. SERVER PORT
             - name: SERVER_PORT
               value: "8089"
-
 ---
 apiVersion: v1
 kind: Service
@@ -47,9 +41,9 @@ metadata:
   name: payment-service
   namespace: banking-ns
 spec:
-  type: LoadBalancer # Publicly accessible
+  type: LoadBalancer
   selector:
     app: payment-service
   ports:
-    - port: 80          # Public Port
-      targetPort: 8089  # Internal Container Port
+    - port: 80
+      targetPort: 8089
