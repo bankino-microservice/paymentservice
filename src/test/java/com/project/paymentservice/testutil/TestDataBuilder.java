@@ -34,16 +34,16 @@ public class TestDataBuilder {
         return input;
     }
 
-    public static SavingsInput createSavingsInput() {
-        SavingsInput input = new SavingsInput();
+    public static DepotRetraitCEpargneRequestDTO createSavingsInput() {
+        DepotRetraitCEpargneRequestDTO input = new DepotRetraitCEpargneRequestDTO();
         input.setEpargnerib("EPARGNE123");
         input.setCourantrib("COURANT456");
         input.setMontant(500.0);
         return input;
     }
 
-    public static SavingsInput createSavingsInput(String epargneRib, String courantRib, Double montant) {
-        SavingsInput input = new SavingsInput();
+    public static DepotRetraitCEpargneRequestDTO createSavingsInput(String epargneRib, String courantRib, Double montant) {
+        DepotRetraitCEpargneRequestDTO input = new DepotRetraitCEpargneRequestDTO();
         input.setEpargnerib(epargneRib);
         input.setCourantrib(courantRib);
         input.setMontant(montant);
@@ -96,9 +96,7 @@ public class TestDataBuilder {
         dto.setEpargnerib("EPARGNE123");
         dto.setCourantrib("COURANT456");
         dto.setMontant(500.0);
-        dto.setYear(2025);
-        dto.setMonth(12);
-        dto.setDay(15);
+
         return dto;
     }
 
