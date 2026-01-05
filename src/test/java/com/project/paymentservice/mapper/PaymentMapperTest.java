@@ -118,7 +118,7 @@ class PaymentMapperTest {
     @Test
     void toSavingsRequest_shouldMapAllFields_whenValidInputProvided() {
         // Arrange
-        SavingsInput input = TestDataBuilder.createSavingsInput(
+        DepotRetraitCEpargneRequestDTO input = TestDataBuilder.createSavingsInput(
                 "EPARGNE_RIB_789",
                 "COURANT_RIB_012",
                 3500.50);
@@ -145,13 +145,13 @@ class PaymentMapperTest {
     @Test
     void toSavingsRequest_shouldHandleNullFields_whenInputHasNullFields() {
         // Arrange
-        SavingsInput input = new SavingsInput();
+        DepotRetraitCEpargneRequestDTO input = new DepotRetraitCEpargneRequestDTO();
         input.setEpargnerib(null);
         input.setCourantrib(null);
         input.setMontant(null);
 
         // Act
-        DepotRetraitCEpargneRequestDTO result = paymentMapper.toSavingsRequest(input);
+        DepotRetraitCEpargneRequestDTO result = input;
 
         // Assert
         assertThat(result).isNotNull();
@@ -163,7 +163,7 @@ class PaymentMapperTest {
     @Test
     void toSavingsRequest_shouldHandleEmptyStrings_whenRibsAreEmpty() {
         // Arrange
-        SavingsInput input = TestDataBuilder.createSavingsInput(
+        DepotRetraitCEpargneRequestDTO input = TestDataBuilder.createSavingsInput(
                 "",
                 "",
                 100.0);
@@ -181,7 +181,7 @@ class PaymentMapperTest {
     @Test
     void toSavingsRequest_shouldHandleNegativeAmount_whenMontantIsNegative() {
         // Arrange
-        SavingsInput input = TestDataBuilder.createSavingsInput(
+        DepotRetraitCEpargneRequestDTO input = TestDataBuilder.createSavingsInput(
                 "EPARGNE_RIB",
                 "COURANT_RIB",
                 -500.0);

@@ -12,7 +12,7 @@ public interface PaymentMapper {
 
     // Savings Mapping
     // Since fields (rib, amount) match exactly, MapStruct handles it automatically
-    DepotRetraitCEpargneRequestDTO toSavingsRequest(SavingsInput input);
+    DepotRetraitCEpargneRequestDTO toSavingsRequest(DepotRetraitCEpargneRequestDTO input);
 
     // Closing Operations Mapping
     ClotureQuinzaineRequestDTO toQuinzaineRequest(QuinzaineInput input);

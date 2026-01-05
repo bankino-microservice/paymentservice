@@ -57,7 +57,7 @@ class PaymentRestControllerTest {
     private ExecuteVirementInput virementInput;
     private ExecuteVirementRequestDTO virementRequestDTO;
     private ExecuteVirementResponseDTO virementResponseDTO;
-    private SavingsInput savingsInput;
+    private DepotRetraitCEpargneRequestDTO savingsInput;
     private DepotRetraitCEpargneRequestDTO savingsRequestDTO;
     private CEpargneResponseDTO savingsResponseDTO;
     private QuinzaineInput quinzaineInput;
