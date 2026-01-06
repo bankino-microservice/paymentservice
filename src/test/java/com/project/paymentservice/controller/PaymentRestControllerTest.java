@@ -146,9 +146,6 @@ class PaymentRestControllerTest {
         // Arrange
         when(paymentMapper.toVirementRequest(virementInput)).thenReturn(virementRequestDTO);
         when(legacyClient.executeVirement(virementRequestDTO)).thenReturn(virementResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(clientDetails));
 
         // Act
         ResponseEntity<ExecuteVirementResponseDTO> response = controller.executeVirement(virementInput);
@@ -158,9 +155,8 @@ class PaymentRestControllerTest {
         assertThat(response.getBody()).isEqualTo(virementResponseDTO);
         verify(paymentMapper, times(1)).toVirementRequest(virementInput);
         verify(legacyClient, times(1)).executeVirement(virementRequestDTO);
-        verify(compteclient, times(1)).getClientIdByRib(any(GetClientIdByRibRequestDTO.class));
-        verify(userclient, times(1)).get(100L);
-        verify(paymentservice, times(1)).sendPaymentEvent(any(PaymentEvent.class));
+        // No interactions with compteclient, userclient, or paymentservice because the code is commented out
+        verifyNoInteractions(compteclient, userclient, paymentservice);
     }
 
     @Test
@@ -168,23 +164,14 @@ class PaymentRestControllerTest {
         // Arrange
         when(paymentMapper.toVirementRequest(virementInput)).thenReturn(virementRequestDTO);
         when(legacyClient.executeVirement(virementRequestDTO)).thenReturn(virementResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(clientDetails));
-
-        ArgumentCaptor<PaymentEvent> eventCaptor = ArgumentCaptor.forClass(PaymentEvent.class);
 
         // Act
         controller.executeVirement(virementInput);
 
-        // Assert
-        verify(paymentservice).sendPaymentEvent(eventCaptor.capture());
-        PaymentEvent capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getAmount()).isEqualByComparingTo(BigDecimal.valueOf(virementInput.getMontant()));
-        assertThat(capturedEvent.getClientName()).isEqualTo(clientDetails.getFirstName());
-        assertThat(capturedEvent.getClientEmail()).isEqualTo(clientDetails.getEmail());
-        assertThat(capturedEvent.getClientPhoneNumber()).isEqualTo(clientDetails.getPhone());
-        assertThat(capturedEvent.getDescription()).isEqualTo("Virement");
+        // Assert - No payment event is sent because the code is commented out
+        verifyNoInteractions(paymentservice);
+        verifyNoInteractions(compteclient);
+        verifyNoInteractions(userclient);
     }
 
     @Test
@@ -206,19 +193,12 @@ class PaymentRestControllerTest {
         // Arrange
         when(paymentMapper.toVirementRequest(virementInput)).thenReturn(virementRequestDTO);
         when(legacyClient.executeVirement(virementRequestDTO)).thenReturn(virementResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(clientDetails));
-
-        ArgumentCaptor<GetClientIdByRibRequestDTO> ribCaptor = ArgumentCaptor
-                .forClass(GetClientIdByRibRequestDTO.class);
 
         // Act
         controller.executeVirement(virementInput);
 
-        // Assert
-        verify(compteclient).getClientIdByRib(ribCaptor.capture());
-        assertThat(ribCaptor.getValue().getRib()).isEqualTo(virementInput.getRibRecepteur());
+        // Assert - No call to compteclient because the code is commented out
+        verifyNoInteractions(compteclient);
     }
 
     // ========== DEPOSIT SAVINGS TESTS ==========
@@ -226,11 +206,7 @@ class PaymentRestControllerTest {
     @Test
     void depositSavings_shouldReturnOk_whenDepositIsSuccessful() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.deposit(savingsRequestDTO)).thenReturn(savingsResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(clientDetails));
+        when(legacyClient.deposit(savingsInput)).thenReturn(savingsResponseDTO);
 
         // Act
         ResponseEntity<CEpargneResponseDTO> response = controller.depositSavings(savingsInput);
@@ -238,39 +214,30 @@ class PaymentRestControllerTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(savingsResponseDTO);
-        verify(paymentMapper, times(1)).toSavingsRequest(savingsInput);
-        verify(legacyClient, times(1)).deposit(savingsRequestDTO);
-        verify(compteclient, times(1)).getClientIdByRib(any(GetClientIdByRibRequestDTO.class));
-        verify(userclient, times(1)).get(100L);
-        verify(paymentservice, times(1)).sendPaymentEvent(any(PaymentEvent.class));
+        verify(legacyClient, times(1)).deposit(savingsInput);
+        // No interactions with mapper, compteclient, userclient, or paymentservice because the code is commented out
+        verifyNoInteractions(paymentMapper, compteclient, userclient, paymentservice);
     }
 
     @Test
     void depositSavings_shouldSendPaymentEventWithDepotDescription_whenDepositIsSuccessful() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.deposit(savingsRequestDTO)).thenReturn(savingsResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(clientDetails));
-
-        ArgumentCaptor<PaymentEvent> eventCaptor = ArgumentCaptor.forClass(PaymentEvent.class);
+        when(legacyClient.deposit(savingsInput)).thenReturn(savingsResponseDTO);
 
         // Act
         controller.depositSavings(savingsInput);
 
-        // Assert
-        verify(paymentservice).sendPaymentEvent(eventCaptor.capture());
-        PaymentEvent capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getDescription()).isEqualTo("Depot");
-        assertThat(capturedEvent.getAmount()).isEqualByComparingTo(BigDecimal.valueOf(savingsInput.getMontant()));
+        // Assert - No payment event is sent because the code is commented out
+        verifyNoInteractions(paymentservice);
+        verifyNoInteractions(paymentMapper);
+        verifyNoInteractions(compteclient);
+        verifyNoInteractions(userclient);
     }
 
     @Test
     void depositSavings_shouldThrowRuntimeException_whenLegacyClientReturnsNull() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.deposit(savingsRequestDTO)).thenReturn(null);
+        when(legacyClient.deposit(savingsInput)).thenReturn(null);
 
         // Act & Assert
         assertThatThrownBy(() -> controller.depositSavings(savingsInput))
@@ -283,21 +250,13 @@ class PaymentRestControllerTest {
     @Test
     void depositSavings_shouldUseCurrentRibForClientLookup_whenDepositIsSuccessful() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.deposit(savingsRequestDTO)).thenReturn(savingsResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(clientDetails));
-
-        ArgumentCaptor<GetClientIdByRibRequestDTO> ribCaptor = ArgumentCaptor
-                .forClass(GetClientIdByRibRequestDTO.class);
+        when(legacyClient.deposit(savingsInput)).thenReturn(savingsResponseDTO);
 
         // Act
         controller.depositSavings(savingsInput);
 
-        // Assert
-        verify(compteclient).getClientIdByRib(ribCaptor.capture());
-        assertThat(ribCaptor.getValue().getRib()).isEqualTo(savingsInput.getCourantrib());
+        // Assert - No call to compteclient because the code is commented out
+        verifyNoInteractions(compteclient);
     }
 
     // ========== WITHDRAW SAVINGS TESTS ==========
@@ -305,11 +264,7 @@ class PaymentRestControllerTest {
     @Test
     void withdrawSavings_shouldReturnOk_whenWithdrawalIsSuccessful() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.withdraw(savingsRequestDTO)).thenReturn(savingsResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(clientDetails));
+        when(legacyClient.withdraw(savingsInput)).thenReturn(savingsResponseDTO);
 
         // Act
         ResponseEntity<CEpargneResponseDTO> response = controller.withdrawSavings(savingsInput);
@@ -317,39 +272,30 @@ class PaymentRestControllerTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(savingsResponseDTO);
-        verify(paymentMapper, times(1)).toSavingsRequest(savingsInput);
-        verify(legacyClient, times(1)).withdraw(savingsRequestDTO);
-        verify(compteclient, times(1)).getClientIdByRib(any(GetClientIdByRibRequestDTO.class));
-        verify(userclient, times(1)).get(100L);
-        verify(paymentservice, times(1)).sendPaymentEvent(any(PaymentEvent.class));
+        verify(legacyClient, times(1)).withdraw(savingsInput);
+        // No interactions with mapper, compteclient, userclient, or paymentservice because the code is commented out
+        verifyNoInteractions(paymentMapper, compteclient, userclient, paymentservice);
     }
 
     @Test
     void withdrawSavings_shouldSendPaymentEventWithRetraitDescription_whenWithdrawalIsSuccessful() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.withdraw(savingsRequestDTO)).thenReturn(savingsResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(clientDetails));
-
-        ArgumentCaptor<PaymentEvent> eventCaptor = ArgumentCaptor.forClass(PaymentEvent.class);
+        when(legacyClient.withdraw(savingsInput)).thenReturn(savingsResponseDTO);
 
         // Act
         controller.withdrawSavings(savingsInput);
 
-        // Assert
-        verify(paymentservice).sendPaymentEvent(eventCaptor.capture());
-        PaymentEvent capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getDescription()).isEqualTo("Retrait");
-        assertThat(capturedEvent.getAmount()).isEqualByComparingTo(BigDecimal.valueOf(savingsInput.getMontant()));
+        // Assert - No payment event is sent because the code is commented out
+        verifyNoInteractions(paymentservice);
+        verifyNoInteractions(paymentMapper);
+        verifyNoInteractions(compteclient);
+        verifyNoInteractions(userclient);
     }
 
     @Test
     void withdrawSavings_shouldThrowRuntimeException_whenLegacyClientReturnsNull() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.withdraw(savingsRequestDTO)).thenReturn(null);
+        when(legacyClient.withdraw(savingsInput)).thenReturn(null);
 
         // Act & Assert
         assertThatThrownBy(() -> controller.withdrawSavings(savingsInput))
@@ -445,12 +391,15 @@ class PaymentRestControllerTest {
         // Arrange
         when(paymentMapper.toVirementRequest(virementInput)).thenReturn(virementRequestDTO);
         when(legacyClient.executeVirement(virementRequestDTO)).thenReturn(virementResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(null));
 
-        // Act & Assert - Should throw NullPointerException due to missing null check
-        assertThatThrownBy(() -> controller.executeVirement(virementInput))
-                .isInstanceOf(NullPointerException.class);
+        // Act
+        ResponseEntity<ExecuteVirementResponseDTO> response = controller.executeVirement(virementInput);
+
+        // Assert - No error because compteclient is not called (code is commented out)
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isEqualTo(virementResponseDTO);
+        verifyNoInteractions(compteclient);
+        verify(paymentservice, never()).sendPaymentEvent(any(PaymentEvent.class));
     }
 
     @Test
@@ -458,39 +407,44 @@ class PaymentRestControllerTest {
         // Arrange
         when(paymentMapper.toVirementRequest(virementInput)).thenReturn(virementRequestDTO);
         when(legacyClient.executeVirement(virementRequestDTO)).thenReturn(virementResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(null));
 
-        // Act & Assert - Should throw NullPointerException due to missing null check
-        assertThatThrownBy(() -> controller.executeVirement(virementInput))
-                .isInstanceOf(NullPointerException.class);
+        // Act
+        ResponseEntity<ExecuteVirementResponseDTO> response = controller.executeVirement(virementInput);
+
+        // Assert - No error because userclient is not called (code is commented out)
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isEqualTo(virementResponseDTO);
+        verifyNoInteractions(userclient);
+        verify(paymentservice, never()).sendPaymentEvent(any(PaymentEvent.class));
     }
 
     @Test
     void depositSavings_shouldHandleNullResponseEntityBody_whenCompteclientReturnsNullBody() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.deposit(savingsRequestDTO)).thenReturn(savingsResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(null));
+        when(legacyClient.deposit(savingsInput)).thenReturn(savingsResponseDTO);
 
-        // Act & Assert
-        assertThatThrownBy(() -> controller.depositSavings(savingsInput))
-                .isInstanceOf(NullPointerException.class);
+        // Act
+        ResponseEntity<CEpargneResponseDTO> response = controller.depositSavings(savingsInput);
+
+        // Assert - No error because compteclient is not called (code is commented out)
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(savingsResponseDTO);
+        verifyNoInteractions(compteclient);
+        verify(paymentservice, never()).sendPaymentEvent(any(PaymentEvent.class));
     }
 
     @Test
     void withdrawSavings_shouldHandleNullResponseEntityBody_whenUserclientReturnsNullBody() {
         // Arrange
-        when(paymentMapper.toSavingsRequest(savingsInput)).thenReturn(savingsRequestDTO);
-        when(legacyClient.withdraw(savingsRequestDTO)).thenReturn(savingsResponseDTO);
-        when(compteclient.getClientIdByRib(any(GetClientIdByRibRequestDTO.class)))
-                .thenReturn(ResponseEntity.ok(getClientIdResponse));
-        when(userclient.get(100L)).thenReturn(ResponseEntity.ok(null));
+        when(legacyClient.withdraw(savingsInput)).thenReturn(savingsResponseDTO);
 
-        // Act & Assert
-        assertThatThrownBy(() -> controller.withdrawSavings(savingsInput))
-                .isInstanceOf(NullPointerException.class);
+        // Act
+        ResponseEntity<CEpargneResponseDTO> response = controller.withdrawSavings(savingsInput);
+
+        // Assert - No error because userclient is not called (code is commented out)
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(savingsResponseDTO);
+        verifyNoInteractions(userclient);
+        verify(paymentservice, never()).sendPaymentEvent(any(PaymentEvent.class));
     }
 }

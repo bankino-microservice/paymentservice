@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
         url = "${user.service}",
         configuration = FeignOAuth2Config.class)
 public interface Userclient {
+
     @GetMapping("/api/users/clients/get/{id}")
     public ResponseEntity<RegisterClientResDTO> get(@PathVariable Long id);
 
