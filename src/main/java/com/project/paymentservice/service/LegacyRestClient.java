@@ -1,6 +1,9 @@
 package com.project.paymentservice.service;
 
 import com.project.paymentservice.model.dto.*;
+import com.project.paymentservice.model.dto.response.GetAllVirementsClientResponseDTO;
+import com.project.paymentservice.model.dto.response.GetVirementsEmisResponseDTO;
+import com.project.paymentservice.model.dto.response.GetVirementsRecusResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +20,15 @@ public interface LegacyRestClient {
 
     @GetMapping("/api/virements/{id}")
     VirementSoapInfoDTO getVirementById(@PathVariable("id") Long id);
+
+    @GetMapping("/api/virements/client/{clientRib}")
+    GetAllVirementsClientResponseDTO getAllVirementsClient(@PathVariable("clientRib") String clientRib);
+
+    @GetMapping("/api/virements/emis/{clientRib}")
+    GetVirementsEmisResponseDTO getVirementsEmis(@PathVariable("clientRib") String clientRib);
+
+    @GetMapping("/api/virements/recus/{clientRib}")
+    GetVirementsRecusResponseDTO getVirementsRecus(@PathVariable("clientRib") String clientRib);
 
     // --- Savings Operations ---
     @PostMapping("/api/savings/deposit")

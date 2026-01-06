@@ -15,7 +15,7 @@ spring:
 
 legacy:
   service:
-    url: http://localhost:8085 # The URL where your LegacyAdapterService is running
+    url: http://localhost:8080 # The URL where your LegacyAdapterService is running
 
 
 kafka:

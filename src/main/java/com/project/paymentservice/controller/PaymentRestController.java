@@ -4,6 +4,9 @@ import com.project.paymentservice.model.dto.*;
 import com.project.paymentservice.model.dto.event.PaymentEvent;
 //
 import com.project.paymentservice.model.dto.inputs.*;
+import com.project.paymentservice.model.dto.response.GetAllVirementsClientResponseDTO;
+import com.project.paymentservice.model.dto.response.GetVirementsEmisResponseDTO;
+import com.project.paymentservice.model.dto.response.GetVirementsRecusResponseDTO;
 import com.project.paymentservice.model.mapper.PaymentMapper;
 import com.project.paymentservice.service.Compteclient;
 import com.project.paymentservice.service.LegacyRestClient;
@@ -25,13 +28,13 @@ public class PaymentRestController {
     private final Userclient userclient;
 
     public PaymentRestController(LegacyRestClient legacyClient,
-                                 PaymentMapper paymentMapper, Paymentservice paymentservice
-            ,Compteclient compteclient, Userclient userclient) {
+            PaymentMapper paymentMapper, Paymentservice paymentservice, Compteclient compteclient,
+            Userclient userclient) {
         this.legacyClient = legacyClient;
         this.paymentMapper = paymentMapper;
         this.paymentservice = paymentservice;
         this.compteclient = compteclient;
-        this.userclient=userclient;
+        this.userclient = userclient;
     }
 
     // ---------------- QUERIES ----------------
@@ -39,16 +42,32 @@ public class PaymentRestController {
     @GetMapping("/virements/{id}")
     public ResponseEntity<VirementSoapInfoDTO> getVirementById(@PathVariable Long id) {
         return ResponseEntity.ok(
-                legacyClient.getVirementById(id)
-        );
+                legacyClient.getVirementById(id));
+    }
+
+    @GetMapping("/virements/client/{clientRib}")
+    public ResponseEntity<GetAllVirementsClientResponseDTO> getAllVirementsClient(@PathVariable String clientRib) {
+        return ResponseEntity.ok(
+                legacyClient.getAllVirementsClient(clientRib));
+    }
+
+    @GetMapping("/virements/emis/{clientRib}")
+    public ResponseEntity<GetVirementsEmisResponseDTO> getVirementsEmis(@PathVariable String clientRib) {
+        return ResponseEntity.ok(
+                legacyClient.getVirementsEmis(clientRib));
+    }
+
+    @GetMapping("/virements/recus/{clientRib}")
+    public ResponseEntity<GetVirementsRecusResponseDTO> getVirementsRecus(@PathVariable String clientRib) {
+        return ResponseEntity.ok(
+                legacyClient.getVirementsRecus(clientRib));
     }
 
     // ---------------- MUTATIONS : VIREMENT ----------------
 
     @PostMapping("/virements/execute")
     public ResponseEntity<ExecuteVirementResponseDTO> executeVirement(
-            @RequestBody ExecuteVirementInput input
-    ) {
+            @RequestBody ExecuteVirementInput input) {
         // 1. Map the input
         ExecuteVirementRequestDTO request = paymentMapper.toVirementRequest(input);
         ExecuteVirementResponseDTO responseBody = legacyClient.executeVirement(request);
@@ -154,34 +173,28 @@ public class PaymentRestController {
 
     @PostMapping("/closing/quinzaine")
     public ResponseEntity<ClotureAnnuelleResponseDTO> closeQuinzaine(
-            @RequestBody QuinzaineInput input
-    ) {
+            @RequestBody QuinzaineInput input) {
         return ResponseEntity.ok(
                 legacyClient.closeQuinzaine(
-                        paymentMapper.toQuinzaineRequest(input)
-                )
-        );
+                        paymentMapper.toQuinzaineRequest(input)));
     }
 
     @PostMapping("/closing/annual")
     public ResponseEntity<ClotureAnnuelleResponseDTO> closeAnnual(
-            @RequestBody AnnualInput input
-    ) {
+            @RequestBody AnnualInput input) {
         return ResponseEntity.ok(
                 legacyClient.closeAnnual(
-                        paymentMapper.toAnnualRequest(input)
-                )
-        );
+                        paymentMapper.toAnnualRequest(input)));
     }
+
     @PostMapping("/static")
     public ResponseEntity<String> sendStaticPayment() {
 
-//        paymentservice.sendPaymentEvent(
-//                PaymentEventMock.STATIC_PAYMENT_EVENT
-//        );
+        // paymentservice.sendPaymentEvent(
+        // PaymentEventMock.STATIC_PAYMENT_EVENT
+        // );
 
         return ResponseEntity.ok(
-                "Static payment event sent to NotificationService"
-        );
+                "Static payment event sent to NotificationService");
     }
 }
