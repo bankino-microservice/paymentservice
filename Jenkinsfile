@@ -8,7 +8,7 @@ pipeline{
     environment{
         CLUSTER_NAME = "ebanking-dev-cluster"
         Scanner_home= tool 'sonar'
-        CREDENTIAL_ID="adminuser:us-west-2:awstoken"
+        CREDENTIAL_ID="ecrCred"
         appregistery="342547628532.dkr.ecr.us-west-2.amazonaws.com/ebanking"
         projectregistery="https://342547628532.dkr.ecr.us-west-2.amazonaws.com"
 
