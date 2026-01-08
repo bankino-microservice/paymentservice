@@ -37,7 +37,7 @@ pipeline{
         stage("Checkout"){
             steps{
               git branch:"final" , url:"https://github.com/bankino-microservice/paymentservice.git",
-                credentialsId: 'git-token'
+                credentialsId: 'ebanking-git-token'
             }
         }
 
