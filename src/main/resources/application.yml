@@ -1,54 +1,45 @@
 server:
-  port: 8089 # Run Payment Service on 8089 to avoid conflict with Legacy (8081)
+  port: ${SERVER_PORT:8089}
 
 spring:
   application:
     name: payment-service
 
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    properties:
-      spring.json.add.type.headers: true
+#  kafka:
+#    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
 
   security:
-    # ===== Resource Server (validate incoming JWTs) =====
     oauth2:
+      # ===== Validate incoming JWTs =====
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/bankino
+          issuer-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI}
 
-      # ===== OAuth2 Client (to call other services) =====
+      # ===== OAuth2 Client (client_credentials) =====
       client:
         registration:
           keycloak:
-            client-id: ${keycloak.client-id}
-            client-secret: ${keycloak.client-secret}
+            client-id: ${KEYCLOAK_CLIENT_ID}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET}
             authorization-grant-type: client_credentials
             scope: openid
         provider:
           keycloak:
-            token-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
+            token-uri: ${KEYCLOAK_TOKEN_URI}
 
+# ===== Legacy Adapter =====
 legacy:
   service:
-    url: http://localhost:8085 # The URL where your LegacyAdapterService is running
+    url: ${LEGACY_SERVICE_URL}
 
-kafka:
-  topic:
-    payment-events: payment-events
-
+# ===== Internal Services =====
 account:
-  service: http://localhost:8084
+  service: ${ACCOUNT_SERVICE}
 
 user:
-  service: http://localhost:8083
+  service: ${USER_SERVICE}
 
-# ===== Keycloak environment variables =====
-keycloak:
-  client-id: payment-service
-  client-secret: tbHITJJmxe9GzHy8SmgwWV3GThSqoX0O
-  auth-server-url: http://localhost:8080
-  realm: bankino
+## ===== Kafka Topics =====
+#kafka:
+#  topic:
+#    payment-events: payment-events

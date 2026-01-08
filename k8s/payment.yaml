@@ -34,6 +34,10 @@ spec:
               value: "http://user-service:80"
             - name: SERVER_PORT
               value: "8089"
+            - name: KEYCLOAK_CLIENT_SECRET
+              value: "tbHITJJmxe9GzHy8SmgwWV3GThSqoX0O"
+            - name: KEYCLOAK_TOKEN_URI
+              value: "http://keycloak:8080/realms/bankino/protocol/openid-connect/token"
 ---
 apiVersion: v1
 kind: Service
@@ -41,7 +45,7 @@ metadata:
   name: payment-service
   namespace: banking-ns
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: payment-service
   ports:
